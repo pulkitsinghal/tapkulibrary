@@ -58,11 +58,17 @@
 	[[TKAlertCenter defaultCenter] postAlertWithMessage:@"This is the alert system"];
 	[[TKAlertCenter defaultCenter] postAlertWithMessage:@"Use images too!" image:[UIImage imageNamed:@"beer"]];
 
+    [[TKAlertCenter defaultCenter] postAlertWithMessage:@"Beer! Omg Beer? Yes beer! Lemme have some! Sure, here you go ... glug glug glug ... Ah! that felt good :)"
+                                                  image:[UIImage imageNamed:@"beer@2x"]];
 
+	[[TKAlertCenter defaultCenter] postAlertWithMessage:@"Image will scale to fit!"
+                                                  image:[UIImage imageNamed:@"ipadcover_2.jpg"]];
 }
 
 - (void) beer{
-	[[TKAlertCenter defaultCenter] postAlertWithMessage:@"Beer!" image:[UIImage imageNamed:@"beer"]];
+    [[TKAlertCenter defaultCenter] postAlertWithMessage:@"Tap to dismiss..."
+                                                  image:[UIImage imageNamed:@"ipadcover_2.jpg"]
+                                           tapToDismiss:YES];
 }
 
 
