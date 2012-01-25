@@ -62,7 +62,10 @@
 	[[UIColor colorWithWhite:0 alpha:0.8] set];
 	[UIView drawRoundRectangleInRect:rect withRadius:10];
 	[[UIColor whiteColor] set];
-	[_text drawInRect:_messageRect withFont:[UIFont boldSystemFontOfSize:14] lineBreakMode:UILineBreakModeWordWrap alignment:UITextAlignmentCenter];
+	[_text drawInRect:_messageRect
+             withFont:[UIFont boldSystemFontOfSize:14]
+        lineBreakMode:UILineBreakModeWordWrap
+            alignment:UITextAlignmentCenter];
 	
 	CGRect r = CGRectZero;
 	r.origin.y = 15;
@@ -72,27 +75,130 @@
 	[_image drawInRect:r];
 }
 
-#pragma mark Setter Methods
-- (void) adjust{
-	
-	CGSize s = [_text sizeWithFont:[UIFont boldSystemFontOfSize:14] constrainedToSize:CGSizeMake(160,200) lineBreakMode:UILineBreakModeWordWrap];
-	
-	float imageAdjustment = 0;
+#pragma mark Instance Methods
+
+/* The following method is copied from:
+ * http://stackoverflow.com/questions/603907/uiimage-resize-then-crop
+ * where it was posted by: Brad Larson.
+ */
+- (UIImage*)imageWithImage:(UIImage*)image 
+              scaledToSize:(CGSize)newSize
+{
+    UIGraphicsBeginImageContext( newSize );
+    [image drawInRect:CGRectMake(0,0,newSize.width,newSize.height)];
+    UIImage* newImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return newImage;
+}
+
+- (void) adjust
+{
+    float xPaddingFromWindowBorders = 20;
+    float xPaddingFromAlertBorders = 20;
+    float yPaddingFromWindowBorders = 200;
+    float yPaddingFromAlertBorders = 20;
+    float yPaddingFromAlertBottomBorder = 5;
+    float widthUpperLimit = [UIApplication sharedApplication].keyWindow.bounds.size.width
+                            - xPaddingFromWindowBorders
+                            - xPaddingFromAlertBorders;
+    float heightUpperLimit = [UIApplication sharedApplication].keyWindow.bounds.size.height
+                            - yPaddingFromWindowBorders
+                            - yPaddingFromAlertBorders;
+
+    bool imageDimensionsNeedToBeAltered = NO;
+    CGSize alteredImageSize;
+    if (_image) {
+        alteredImageSize = CGSizeMake(_image.size.width, _image.size.height);
+    }
+
+	float totalWidth = 160; // start with the desired upper limit for text rectangle
 	if (_image) {
-		imageAdjustment = 7+_image.size.height;
-	}
-	
-	self.bounds = CGRectMake(0, 0, s.width+40, s.height+15+15+imageAdjustment);
-	
-	_messageRect.size = s;
-	_messageRect.size.height += 5;
-	_messageRect.origin.x = 20;
-	_messageRect.origin.y = 15+imageAdjustment;
-	
+        // Is image width greater than default text width?
+		if (_image.size.width > totalWidth) {
+            NSLog(@"Image width is greater than default text width!");
+            totalWidth = _image.size.width;
+        }
+        // Is image width greater than the max width allowed?
+        if (totalWidth > widthUpperLimit) {
+            NSLog(@"Image width is greater than screen width!");
+            totalWidth = widthUpperLimit;
+            imageDimensionsNeedToBeAltered = YES;
+            alteredImageSize.width = totalWidth;
+        }
+    }
+
+    float adjustTextWithinThisHeight = 200;
+    if (_image) {
+        if (adjustTextWithinThisHeight < (heightUpperLimit - _image.size.height)) {
+            adjustTextWithinThisHeight = heightUpperLimit - _image.size.height;
+        }
+    }
+
+	CGSize constrainedTextRectSize =
+    [_text sizeWithFont:[UIFont boldSystemFontOfSize:14]
+      constrainedToSize:CGSizeMake(totalWidth,adjustTextWithinThisHeight)
+          lineBreakMode:UILineBreakModeWordWrap];
+
+    NSLog(@"Constrained Text Rectangle - width: %f, height: %f", constrainedTextRectSize.width, constrainedTextRectSize.height);
+    if(_image) {
+        if( (_image.size.width < totalWidth) && (constrainedTextRectSize.width < totalWidth) ) {
+            NSLog(@"Both image and message need less space than the total width: %f, so lets use the wider one out of the two %f",
+                  totalWidth,
+                  MAX(_image.size.width, constrainedTextRectSize.width));
+            totalWidth = MAX(_image.size.width, constrainedTextRectSize.width);
+        }
+    } else {
+        NSLog(@"There's no image, so lets use the absolute mimimum width needed for the text: %f", constrainedTextRectSize.width);
+        totalWidth = constrainedTextRectSize.width;
+    }
+
+    float combinedHeight = constrainedTextRectSize.height; // without an image, the total height matches that of the text rectangle
+    NSLog(@"Without an image, the total height matches that of the text rectangle: %f", combinedHeight);
+    if (_image) {
+        combinedHeight += _image.size.height; // with an image, there is additional height to account for
+        NSLog(@"With an image, there is additional height to account for: %f, heightUpperLimit: %f", combinedHeight, heightUpperLimit);
+        // Are image and text height together greater than the max height allowed?
+        if (combinedHeight > heightUpperLimit) {
+            NSLog(@"Image and text height together are greater than the max height allowed!");
+            // If so then scale down the image's height
+            imageDimensionsNeedToBeAltered = YES;
+            NSLog(@"Image height before alteration - %f", alteredImageSize.height);
+            alteredImageSize.height = _image.size.height - (combinedHeight - heightUpperLimit);
+            NSLog(@"Image height after alteration - %f", alteredImageSize.height);
+            // And dumb down the total height
+            combinedHeight = heightUpperLimit;
+        }
+    }
+
+    if (imageDimensionsNeedToBeAltered) {
+        NSLog(@"Altering image to fit - width: %f, height: %f, where combinedHeight: %f",
+              alteredImageSize.width,
+              alteredImageSize.height,
+              combinedHeight);
+        _image = [self imageWithImage:_image scaledToSize:alteredImageSize];
+    }
+
+    NSLog(@"Setting alert bounds - totalWidth: %f, combinedHeight: %f", totalWidth, combinedHeight);
+    self.bounds = CGRectMake(0,
+                             0,
+                             totalWidth + xPaddingFromAlertBorders,
+                             combinedHeight + yPaddingFromAlertBorders + yPaddingFromAlertBottomBorder);
+
+	_messageRect.size = constrainedTextRectSize;
+    _messageRect.size.height += yPaddingFromAlertBottomBorder; // avoid the look where the text is stuck to the bottom
+	_messageRect.origin.x = ( (totalWidth - constrainedTextRectSize.width + xPaddingFromAlertBorders) / 2 );
+    if (_image) {
+        _messageRect.origin.y = (combinedHeight - constrainedTextRectSize.height) + yPaddingFromAlertBorders;// + ((s.height+20)/2);
+    } else {
+        _messageRect.origin.y = combinedHeight - constrainedTextRectSize.height + ((constrainedTextRectSize.height+10)/2);
+    }
+
 	[self setNeedsLayout];
 	[self setNeedsDisplay];
 	
 }
+
+#pragma mark Setter Methods
 - (void) setMessageText:(NSString*)str{
 	_text = str;
 	[self adjust];
@@ -183,7 +289,12 @@
 	[UIView beginAnimations:nil context:nil];
 	[UIView setAnimationDuration:0.15];
 	[UIView setAnimationDelegate:self];
-	[UIView setAnimationDidStopSelector:@selector(animationStep2)];
+    if (_tapToDismiss) {
+        UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(animationStep3)];
+        [_alertView addGestureRecognizer:singleTap];
+    } else {
+        [UIView setAnimationDidStopSelector:@selector(animationStep2)];
+    }
 	
 	_alertView.transform = CGAffineTransformMakeRotation(degrees * M_PI / 180);
 	_alertView.frame = CGRectMake((int)_alertView.frame.origin.x, (int)_alertView.frame.origin.y, _alertView.frame.size.width, _alertView.frame.size.height);
@@ -224,9 +335,13 @@
 	[self showAlerts];
 	
 }
-- (void) postAlertWithMessage:(NSString*)message image:(UIImage*)image{
+- (void) postAlertWithMessage:(NSString*)message image:(UIImage*)image tapToDismiss:(BOOL)yesOrNO{
+    _tapToDismiss = yesOrNO;
 	[_alerts addObject:[NSArray arrayWithObjects:message,image,nil]];
 	if(!_active) [self showAlerts];
+}
+- (void) postAlertWithMessage:(NSString*)message image:(UIImage*)image{
+    [self postAlertWithMessage:message image:image tapToDismiss:NO];
 }
 - (void) postAlertWithMessage:(NSString*)message{
 	[self postAlertWithMessage:message image:nil];

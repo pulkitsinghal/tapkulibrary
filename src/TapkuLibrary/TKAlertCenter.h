@@ -38,6 +38,7 @@
 @interface TKAlertCenter : NSObject {
 	NSMutableArray *_alerts;
 	BOOL _active;
+    BOOL _tapToDismiss;
 	TKAlertView *_alertView;
 	CGRect _alertFrame;
 }
@@ -47,6 +48,7 @@
  */
 + (TKAlertCenter*) defaultCenter;
 
+- (void) postAlertWithMessage:(NSString*)message image:(UIImage*)image tapToDismiss:(BOOL)yesOrNO;
 
 /** Posts a given alert message to the user.
  @param message The message shown under an image.
