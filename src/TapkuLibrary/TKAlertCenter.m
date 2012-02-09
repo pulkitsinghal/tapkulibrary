@@ -115,12 +115,12 @@
 	if (_image) {
         // Is image width greater than default text width?
 		if (_image.size.width > totalWidth) {
-            NSLog(@"Image width is greater than default text width!");
+            //NSLog(@"Image width is greater than default text width!");
             totalWidth = _image.size.width;
         }
         // Is image width greater than the max width allowed?
         if (totalWidth > widthUpperLimit) {
-            NSLog(@"Image width is greater than screen width!");
+            //NSLog(@"Image width is greater than screen width!");
             totalWidth = widthUpperLimit;
             imageDimensionsNeedToBeAltered = YES;
             alteredImageSize.width = totalWidth;
@@ -139,46 +139,46 @@
       constrainedToSize:CGSizeMake(totalWidth,adjustTextWithinThisHeight)
           lineBreakMode:UILineBreakModeWordWrap];
 
-    NSLog(@"Constrained Text Rectangle - width: %f, height: %f", constrainedTextRectSize.width, constrainedTextRectSize.height);
+    //NSLog(@"Constrained Text Rectangle - width: %f, height: %f", constrainedTextRectSize.width, constrainedTextRectSize.height);
     if(_image) {
         if( (_image.size.width < totalWidth) && (constrainedTextRectSize.width < totalWidth) ) {
-            NSLog(@"Both image and message need less space than the total width: %f, so lets use the wider one out of the two %f",
+            /*NSLog(@"Both image and message need less space than the total width: %f, so lets use the wider one out of the two %f",
                   totalWidth,
-                  MAX(_image.size.width, constrainedTextRectSize.width));
+                  MAX(_image.size.width, constrainedTextRectSize.width));*/
             totalWidth = MAX(_image.size.width, constrainedTextRectSize.width);
         }
     } else {
-        NSLog(@"There's no image, so lets use the absolute mimimum width needed for the text: %f", constrainedTextRectSize.width);
+        //NSLog(@"There's no image, so lets use the absolute mimimum width needed for the text: %f", constrainedTextRectSize.width);
         totalWidth = constrainedTextRectSize.width;
     }
 
     float combinedHeight = constrainedTextRectSize.height; // without an image, the total height matches that of the text rectangle
-    NSLog(@"Without an image, the total height matches that of the text rectangle: %f", combinedHeight);
+    //NSLog(@"Without an image, the total height matches that of the text rectangle: %f", combinedHeight);
     if (_image) {
         combinedHeight += _image.size.height; // with an image, there is additional height to account for
-        NSLog(@"With an image, there is additional height to account for: %f, heightUpperLimit: %f", combinedHeight, heightUpperLimit);
+        //NSLog(@"With an image, there is additional height to account for: %f, heightUpperLimit: %f", combinedHeight, heightUpperLimit);
         // Are image and text height together greater than the max height allowed?
         if (combinedHeight > heightUpperLimit) {
-            NSLog(@"Image and text height together are greater than the max height allowed!");
+            //NSLog(@"Image and text height together are greater than the max height allowed!");
             // If so then scale down the image's height
             imageDimensionsNeedToBeAltered = YES;
-            NSLog(@"Image height before alteration - %f", alteredImageSize.height);
+            //NSLog(@"Image height before alteration - %f", alteredImageSize.height);
             alteredImageSize.height = _image.size.height - (combinedHeight - heightUpperLimit);
-            NSLog(@"Image height after alteration - %f", alteredImageSize.height);
+            //NSLog(@"Image height after alteration - %f", alteredImageSize.height);
             // And dumb down the total height
             combinedHeight = heightUpperLimit;
         }
     }
 
     if (imageDimensionsNeedToBeAltered) {
-        NSLog(@"Altering image to fit - width: %f, height: %f, where combinedHeight: %f",
+        /*NSLog(@"Altering image to fit - width: %f, height: %f, where combinedHeight: %f",
               alteredImageSize.width,
               alteredImageSize.height,
-              combinedHeight);
+              combinedHeight);*/
         _image = [self imageWithImage:_image scaledToSize:alteredImageSize];
     }
 
-    NSLog(@"Setting alert bounds - totalWidth: %f, combinedHeight: %f", totalWidth, combinedHeight);
+    //NSLog(@"Setting alert bounds - totalWidth: %f, combinedHeight: %f", totalWidth, combinedHeight);
     self.bounds = CGRectMake(0,
                              0,
                              totalWidth + xPaddingFromAlertBorders,
