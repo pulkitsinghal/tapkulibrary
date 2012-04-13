@@ -97,7 +97,7 @@
     float xPaddingFromAlertBorders = 20;
     float yPaddingFromWindowBorders = 200;
     float yPaddingFromAlertBorders = 20;
-    float yPaddingFromAlertBottomBorder = 5;
+    float yPaddingAdditionalForWhenImagePresent = 5; // avoid the look where the text is stuck to the bottom
     float widthUpperLimit = [UIApplication sharedApplication].keyWindow.bounds.size.width
                             - xPaddingFromWindowBorders
                             - xPaddingFromAlertBorders;
@@ -178,24 +178,34 @@
         _image = [self imageWithImage:_image scaledToSize:alteredImageSize];
     }
 
-    //NSLog(@"Setting alert bounds - totalWidth: %f, combinedHeight: %f", totalWidth, combinedHeight);
-    self.bounds = CGRectMake(0,
-                             0,
-                             totalWidth + xPaddingFromAlertBorders,
-                             combinedHeight + yPaddingFromAlertBorders + yPaddingFromAlertBottomBorder);
+    if (_image) {
+        /*NSLog(@"Setting alert bounds - totalWidth: %f, combinedHeight: %f",
+              totalWidth + xPaddingFromAlertBorders,
+              combinedHeight + yPaddingFromAlertBorders + yPaddingAdditionalForWhenImagePresent);*/
+        self.bounds = CGRectMake(0,
+                                 0,
+                                 totalWidth + xPaddingFromAlertBorders,
+                                 combinedHeight + yPaddingFromAlertBorders + yPaddingAdditionalForWhenImagePresent);
+    } else {
+        /*NSLog(@"Setting alert bounds - totalWidth: %f, combinedHeight: %f",
+              totalWidth + xPaddingFromAlertBorders,
+              combinedHeight + yPaddingFromAlertBorders);*/
+        self.bounds = CGRectMake(0,
+                                 0,
+                                 totalWidth + xPaddingFromAlertBorders,
+                                 combinedHeight + yPaddingFromAlertBorders);
+    }
 
 	_messageRect.size = constrainedTextRectSize;
-    _messageRect.size.height += yPaddingFromAlertBottomBorder; // avoid the look where the text is stuck to the bottom
 	_messageRect.origin.x = ( (totalWidth - constrainedTextRectSize.width + xPaddingFromAlertBorders) / 2 );
     if (_image) {
-        _messageRect.origin.y = (combinedHeight - constrainedTextRectSize.height) + yPaddingFromAlertBorders;// + ((s.height+20)/2);
+        _messageRect.origin.y = (combinedHeight - constrainedTextRectSize.height) + yPaddingFromAlertBorders;
     } else {
-        _messageRect.origin.y = combinedHeight - constrainedTextRectSize.height + ((constrainedTextRectSize.height+10)/2);
+        _messageRect.origin.y = yPaddingFromAlertBorders/2 ;
     }
 
 	[self setNeedsLayout];
 	[self setNeedsDisplay];
-	
 }
 
 #pragma mark Setter Methods

@@ -56,6 +56,7 @@
 	
 	[[TKAlertCenter defaultCenter] postAlertWithMessage:@"Hi!"];
 	[[TKAlertCenter defaultCenter] postAlertWithMessage:@"This is the alert system"];
+    [[TKAlertCenter defaultCenter] postAlertWithMessage:@"Really Really Really long string to help one see the flaws that are not so obvious with the math behind centering, if one always tests with really really short strings"];
 	[[TKAlertCenter defaultCenter] postAlertWithMessage:@"Use images too!" image:[UIImage imageNamed:@"beer"]];
 
     [[TKAlertCenter defaultCenter] postAlertWithMessage:@"Beer! Omg Beer? Yes beer! Lemme have some! Sure, here you go ... glug glug glug ... Ah! that felt good :)"
